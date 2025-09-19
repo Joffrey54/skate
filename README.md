@@ -150,6 +150,14 @@ export SKATE_DB_KEY=9a8c4b8d5e2f1a9c7d3f4e1b6a2c7d9f8e3c2a1b0d9c7e6f1a2b3c4d5e6f
 skate list
 ```
 
+You can generate a random 32-byte (AES-256) key and encode it in hex with:
+
+```bash
+head -c 32 /dev/urandom | xxd -p -c 32
+````
+
+For AES-128 or AES-192, use 16 or 24 bytes instead of 32.
+
 The **CLI flag takes precedence** over the environment variable if both are set.
 
 ⚠️ **Important notes**:
