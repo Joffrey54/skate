@@ -130,6 +130,33 @@ skate list @work-stuff
 skate list-dbs
 ```
 
+## Encryption
+
+Skate supports optional database encryption using [BadgerDB's encryption feature](https://pkg.go.dev/github.com/dgraph-io/badger/v4).
+
+To enable encryption you must provide a 16, 24, or 32-byte AES key (AES-128, AES-192, AES-256).  
+The key must be passed in **hex format**:
+
+As a CLI flag:
+
+```bash
+skate list --key 9a8c4b8d5e2f1a9c7d3f4e1b6a2c7d9f8e3c2a1b0d9c7e6f1a2b3c4d5e6f7a8
+```
+
+Or use an environment variable:
+
+```bash
+export SKATE_DB_KEY=9a8c4b8d5e2f1a9c7d3f4e1b6a2c7d9f8e3c2a1b0d9c7e6f1a2b3c4d5e6f7a8
+skate list
+```
+
+The **CLI flag takes precedence** over the environment variable if both are set.
+
+⚠️ **Important notes**:
+- If you lose the key, the data cannot be recovered.
+- Changing the key requires recreating the database.
+- Only values are encrypted; keys remain in plaintext (limitation of BadgerDB).
+
 ## Examples
 
 Here are some of our favorite ways to use `skate`.

@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -28,6 +29,7 @@ var (
 	valuesIterate    bool
 	showBinary       bool
 	delimiterIterate string
+	encryptionKey    string
 
 	warningStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("204")).Bold(true)
 
@@ -405,10 +407,30 @@ func openKV(name string) (*badger.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return badger.Open(badger.DefaultOptions(path).WithLoggingLevel(badger.ERROR)) //nolint:wrapcheck
+	opts := badger.DefaultOptions(path).
+		WithLoggingLevel(badger.ERROR).
+		WithIndexCacheSize(100 << 20)
+
+	keyHex := encryptionKey
+	if keyHex == "" {
+		keyHex = os.Getenv("SKATE_DB_KEY")
+	}
+	if keyHex != "" {
+		key, err := hex.DecodeString(keyHex)
+		if err != nil {
+			return nil, err
+		}
+		if len(key) != 16 && len(key) != 24 && len(key) != 32 {
+			return nil, fmt.Errorf("invalid SKATE_DB_KEY: size is %d (must be 16, 24 or 32)", len(key))
+		}
+		opts = opts.WithEncryptionKey(key)
+	}
+
+	return badger.Open(opts)
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&encryptionKey, "key", "e", "", "encryption key")
 	listCmd.Flags().BoolVarP(&reverseIterate, "reverse", "r", false, "list in reverse lexicographic order")
 	listCmd.Flags().BoolVarP(&keysIterate, "keys-only", "k", false, "only print keys and don't fetch values from the db")
 	listCmd.Flags().BoolVarP(&valuesIterate, "values-only", "v", false, "only print values")
