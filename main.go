@@ -413,7 +413,10 @@ func openKV(name string) (*badger.DB, error) {
 
 	keyHex := encryptionKey
 	if keyHex == "" {
-		keyHex = os.Getenv("SKATE_DB_KEY")
+		keyHex = os.Getenv("SKATE_DB_KEY_" + name)
+		if keyHex == "" {
+			keyHex = os.Getenv("SKATE_DB_KEY")
+		}
 	}
 	if keyHex != "" {
 		key, err := hex.DecodeString(keyHex)
